@@ -42,9 +42,11 @@ class Shape {
     static BLUE = new Colour(0, 0, 255, 255);
     static DARK_BLUE = new Colour(0, 0, 139, 255);
     static GREEN = new Colour(0, 255, 0, 255);
+    static DARK_GREEN = new Colour(0, 100, 0, 255);
     static PURPLE = new Colour(128, 0, 128, 255);
     static YELLOW = new Colour(255, 255, 0, 255);
     static DARK_YELLOW = new Colour(204, 204, 0, 255);
+    static OLIVE = new Colour(128, 128, 0, 255);
  }
 
  class NegativeSpace {
@@ -263,19 +265,30 @@ class Shape {
     //     new PixelDigit3x5(i, Colour.RED).draw(context, i*10, i*10);
     // }
     console.log("NumberArt");
-    const PositivePositive = () => new PixelDigit3x5(Rando.next(), Colour.CRIMSON);
-    const PositiveNegative = () => new PixelDigit3x5(Rando.next(), Colour.DARK_YELLOW);
-    const NegativeNegative = ()=>  new PixelDigit3x5(Rando.next(), Colour.BLUE);
-    const NegativePositive = ()=>  new PixelDigit3x5(Rando.next(), Colour.GREEN);
-    const L1Reference = PositivePositive();
+    const PositivePositivePositive = () => new PixelDigit3x5(Rando.next(), Colour.CRIMSON);
+    const PositivePositiveNegative = () => new PixelDigit3x5(Rando.next(), Colour.DARK_RED);
+    const PositiveNegativePositive = () => new PixelDigit3x5(Rando.next(), Colour.DARK_YELLOW);
+    const PositiveNegativeNegative = () => new PixelDigit3x5(Rando.next(), Colour.OLIVE);
+    const NegativeNegativePositive = ()=>  new PixelDigit3x5(Rando.next(), Colour.BLUE);
+    const NegativeNegativeNegative = ()=>  new PixelDigit3x5(Rando.next(), Colour.DARK_BLUE);
+    const NegativePositivePositive = ()=>  new PixelDigit3x5(Rando.next(), Colour.GREEN);
+    const NegativePositiveNegative = ()=>  new PixelDigit3x5(Rando.next(), Colour.DARK_GREEN);
+    const L1Reference = PositivePositivePositive();
     console.log(`L1: ${L1Reference.getPixelWidth()}x${L1Reference.getPixelHeight()}`);
 
-    const Positive = () => new CompoundDigit3x5(1, L1Reference, PositivePositive, PositiveNegative);
-    const Negative = () => new CompoundDigit3x5(1, L1Reference, NegativePositive, NegativeNegative);
-    const L2Reference = Positive();
+    const PositivePositive = () => new CompoundDigit3x5(1, L1Reference, PositivePositivePositive, PositivePositiveNegative);
+    const PositiveNegative = () => new CompoundDigit3x5(1, L1Reference, PositiveNegativePositive, PositiveNegativeNegative);
+    const NegativePositive = () => new CompoundDigit3x5(0, L1Reference, NegativePositivePositive, NegativePositiveNegative);
+    const NegativeNegative = () => new CompoundDigit3x5(0, L1Reference, NegativeNegativePositive, NegativeNegativeNegative);
+    const L2Reference = PositivePositive();
     console.log(`L2: ${L2Reference.getPixelWidth()}x${L2Reference.getPixelHeight()}`);
 
-    const art = new CompoundDigit3x5(7, L2Reference, Positive, Negative);
-    console.log(`L3: ${art.getPixelWidth()}x${art.getPixelHeight()}`);
+    const Positive = () => new CompoundDigit3x5(1, L2Reference, PositivePositive, PositiveNegative);
+    const Negative = () => new CompoundDigit3x5(1, L2Reference, NegativePositive, NegativeNegative);
+    const L3Reference = Positive();
+    console.log(`L3: ${L2Reference.getPixelWidth()}x${L3Reference.getPixelHeight()}`);
+
+    const art = new CompoundDigit3x5(7, L3Reference, Positive, Negative);
+    console.log(`L4: ${art.getPixelWidth()}x${art.getPixelHeight()}`);
     art.draw(context, 0, 0);
 }
