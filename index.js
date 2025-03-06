@@ -37,7 +37,14 @@ class Shape {
     }
     static TRANSPARENT = new Colour(0, 0, 0, 0);
     static RED = new Colour(255, 0, 0, 255);
-    static PURPLE = new Colour(255, 210, 0, 255);
+    static CRIMSON = new Colour(220, 20, 60, 255);
+    static DARK_RED = new Colour(139, 0, 0, 255);
+    static BLUE = new Colour(0, 0, 255, 255);
+    static DARK_BLUE = new Colour(0, 0, 139, 255);
+    static GREEN = new Colour(0, 255, 0, 255);
+    static PURPLE = new Colour(128, 0, 128, 255);
+    static YELLOW = new Colour(255, 255, 0, 255);
+    static DARK_YELLOW = new Colour(204, 204, 0, 255);
  }
 
  class NegativeSpace {
@@ -75,7 +82,7 @@ class Shape {
     constructor(){
         super();
         const d = new Uint8ClampedArray(this.getByteCount());
-        for(let i = d.length-1; i >= 3; i=i-4){
+        for(let i = d.length-4; i >= 0; i=i-4){
             d.set(Colour.PURPLE.bytes, i);
         }
         this.data = d;
@@ -156,45 +163,69 @@ class Shape {
 
  class CompoundDigit3x5 extends Digit3x5 {
     static pixelCount = super.pixelCount;
-    static hPadding = 2;
-    static vPadding = 2;
+    static hPadding = 5;
+    static vPadding = 5;
 
-    constructor(digit, shapes) {
+    constructor(digit, shapePrototype, shapeFactory, negativeShapeFactory) {
         super(digit);
-        this.shapes = shapes;
+        this.shapes = [];
+        for(let row = 0; row < Digit3x5.height; ++row){
+            for(let column = 0; column < Digit3x5.width; ++column){
+                //need to check if this sub-shape actually needs to be rendered
+                if(!!Digit3x5.mask[digit][row*Digit3x5.width+column]){
+                    this.shapes.push(shapeFactory(row, column))
+                }else{
+                    this.shapes.push(negativeShapeFactory(row, column))
+                }
+            }
+        }
     
         const d = new Uint8ClampedArray(this.getByteCount());
 
         //pointer at where we're currently writing in our data
         let byte = 0; 
+        
         //reference sub-shape. this is why all shapes need to be the same size
-        let shape = shapes[0];
+        let shape = shapePrototype;
         const shapePixelHeight = shape.getPixelHeight();
         const shapePixelWidth = shape.getPixelWidth();
-        const bytesPerShape = shapePixelHeight * shapePixelWidth * 4;
         const bytesPerLine = shapePixelWidth * 4;
-        //a line of negative space as wide as an individual sub-shape
-        const negativeLine = NegativeSpace.nPixels(shapePixelWidth);
+        //if(digit==7) console.log(shapePixelHeight, shapePixelWidth);
 
         //how many sub-shape wide is this compound shape?
-        for(let row = 0, shapeNo=0; row < Digit3x5.height; ++row){
+        for(let row = 0; row < Digit3x5.height; ++row){
 
             //how many sub-shape high is this compound shape?
-            for(let column = 0; column < Digit3x5.width; ++column, shapeNo=row*Digit3x5.width+column){
+            for(let column = 0; column < Digit3x5.width; ++column){
                 //the source-sub shape we're writing in our own buffer
-                shape = this.shapes[shapeNo];
+                shape = this.shapes[row*Digit3x5.width+column];
 
                 //copy bytes line by line in the correct position of the destination
                 for(let h = 0; h < shapePixelHeight; ++h){
-                    byte = row * Digit3x5.width * bytesPerShape //entire rows of shapes aleady written
-                            + h * Digit3x5.width * bytesPerLine //entire rows of pixes already written on the current line
-                            + column * bytesPerLine; //the number of columns already skipped
-                    //need to check if this sub-shape actually needs to be rendered
-                    if(!!Digit3x5.mask[digit][shapeNo]){
-                        d.set(shape.data.subarray(h*shapePixelWidth*4, (h+1)*shapePixelWidth*4), byte);
-                    }else{
-                        d.set(negativeLine, byte);
-                    }
+                            //entire rows of shapes aleady written
+                    byte =  row * shapePixelHeight * Digit3x5.width * bytesPerLine
+                            //horizontal padding in between shapes that were skipped
+                            + row * shapePixelHeight * (Digit3x5.width - 1) * CompoundDigit3x5.hPadding * 4
+                            
+                            //vertical padding in between shapes
+                            + row * Digit3x5.width * bytesPerLine * CompoundDigit3x5.vPadding 
+                            //horizontal padding in between vertical padding
+                            + row * (Digit3x5.width - 1) * CompoundDigit3x5.vPadding * CompoundDigit3x5.hPadding * 4
+                            
+                            //entire rows of pixes already written on the current line
+                            + h * Digit3x5.width * bytesPerLine 
+                            //horizontal padding in the rows of pixels already written on the current line
+                            + h * (Digit3x5.width - 1) * CompoundDigit3x5.hPadding * 4
+
+                            //the number of columns already skipped
+                            + column * bytesPerLine
+                            //horizonal padding on he columns already skipped
+                            + column * CompoundDigit3x5.hPadding * 4;
+
+                    d.set(shape.data.subarray(h*shapePixelWidth*4, (h+1)*shapePixelWidth*4), byte);
+                    // if(digit==7) {
+                    //     context.putImageData(new ImageData(d, this.getPixelWidth(), this.getPixelHeight()), 10, 10);
+                    // }
                 }
             }    
         }
@@ -211,20 +242,40 @@ class Shape {
     }
     getPixelWidth(){
         //each shape is repliced horizontally for Digit3x5.width and in between each instance there is hPadding
-        return Digit3x5.width * this.shapes[0].getPixelWidth();// + (Digit3x5.width - 1) * CompoundDigit3x5.hPadding;
+        return Digit3x5.width * this.shapes[0].getPixelWidth() + (Digit3x5.width - 1) * CompoundDigit3x5.hPadding;
     }
     getPixelHeight(){
         //each shape is repliced vertically for Digit3x5.width and in between each instance there is hPadding
-        return Digit3x5.height * this.shapes[0].getPixelHeight();// + (Digit3x5.height - 1) * CompoundDigit3x5.vPadding ;
+        return Digit3x5.height * this.shapes[0].getPixelHeight() + (Digit3x5.height - 1) * CompoundDigit3x5.vPadding ;
     }
  }
 
-//(new Pixel(20,20,[255,0,0,255])).draw(context);
-//new TestShape(10,10).draw(context);
-for(let i=0; i<10; ++i){
-    new PixelDigit3x5(i, Colour.RED).draw(context, i*10, i*10);
-}
+ class Rando{
+    static next(){
+        return Math.round(Math.random()*10)%10;
+    }
+ }
 
-const shapes = [];
-for(let i=0; i<15; ++i){ shapes[i] = new PixelDigit3x5(2, Colour.RED); }
-new CompoundDigit3x5(2, shapes).draw(context, 110, 110);
+ function NumberArt(){
+    //(new Pixel(20,20,[255,0,0,255])).draw(context);
+    // new TestShape().draw(context, 10, 10);
+    // for(let i=0; i<10; ++i){
+    //     new PixelDigit3x5(i, Colour.RED).draw(context, i*10, i*10);
+    // }
+    console.log("NumberArt");
+    const PositivePositive = () => new PixelDigit3x5(Rando.next(), Colour.CRIMSON);
+    const PositiveNegative = () => new PixelDigit3x5(Rando.next(), Colour.DARK_YELLOW);
+    const NegativeNegative = ()=>  new PixelDigit3x5(Rando.next(), Colour.BLUE);
+    const NegativePositive = ()=>  new PixelDigit3x5(Rando.next(), Colour.GREEN);
+    const L1Reference = PositivePositive();
+    console.log(`L1: ${L1Reference.getPixelWidth()}x${L1Reference.getPixelHeight()}`);
+
+    const Positive = () => new CompoundDigit3x5(1, L1Reference, PositivePositive, PositiveNegative);
+    const Negative = () => new CompoundDigit3x5(1, L1Reference, NegativePositive, NegativeNegative);
+    const L2Reference = Positive();
+    console.log(`L2: ${L2Reference.getPixelWidth()}x${L2Reference.getPixelHeight()}`);
+
+    const art = new CompoundDigit3x5(7, L2Reference, Positive, Negative);
+    console.log(`L3: ${art.getPixelWidth()}x${art.getPixelHeight()}`);
+    art.draw(context, 0, 0);
+}
