@@ -1,5 +1,5 @@
 const canvas = document.querySelector("canvas#art");
-const context = canvas.getContext("2d");
+const context = !!canvas ? canvas.getContext("2d") : null;
 //context.fillStyle = "green";
 // Add a rectangle at (10, 10) with size 100x100 pixels
 // context.fillRect(0, 0, canvas.width, canvas.height);
@@ -266,6 +266,48 @@ class Shape {
     }
  }
 
+ function DocFont3x5(){
+    const body = document.querySelector('table#doc tbody');
+    for(let i=0; i<10; ++i){
+        let tr = document.createElement('tr');
+
+        let td1 = document.createElement('td');
+        td1.innerText = ""+i;
+        tr.appendChild(td1);
+
+        let td2 = document.createElement('td');
+        let tbl = document.createElement('table');
+        tbl.classList.add('matrix');
+        let tbl_tbody = document.createElement('tbody');
+        
+        for(let r = 0; r<Digit3x5.height; ++r){
+            let tbl_tr = document.createElement('tr');
+            for(let c = 0; c<Digit3x5.width; ++c){
+                let tbl_td = document.createElement('td');
+                if(!!Digit3x5.mask[i][r*Digit3x5.width+c]){
+                    tbl_td.classList.add('on');
+                    tbl_td.innerText = " ";
+                }else{
+                    tbl_td.classList.add('off');
+                    tbl_td.innerText = " ";
+                }
+                tbl_tr.append(tbl_td);
+            }
+            tbl_tbody.append(tbl_tr);
+        }
+
+        tbl.append(tbl_tbody);
+        td2.append(tbl);
+        tr.appendChild(td2);
+
+        let td3 = document.createElement('td');
+        td3.innerText = Digit3x5.mask[i];
+        tr.appendChild(td3);
+
+        body.appendChild(tr);
+    }
+ }
+
  function NumberArt(){
     //(new Pixel(20,20,[255,0,0,255])).draw(context);
     // new TestShape().draw(context, 10, 10);
@@ -298,5 +340,5 @@ class Shape {
 
     const art = new CompoundDigit3x5(Rando.next(), L3Reference, Positive, Negative, 12, 12);
     console.log(`L4: ${art.getPixelWidth()}x${art.getPixelHeight()}`);
-    art.draw(context, 0, 0);
+    art.draw(context, 0, 10);
 }

@@ -15,3 +15,26 @@ canvas#art {
     margin: 0 auto;
 }
 
+table#doc {
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+table#doc thead td {
+    padding: 5px 20px 5px 0;
+}
+
+table#doc table.matrix{
+    margin: 5px 20px;
+}
+
+table#doc table.matrix td {
+    border: 1px solid #ccc;
+    width: 10px;
+    height: 10px;
+}
+
+table#doc table.matrix td.on {
+    background-color: black;
+} 
