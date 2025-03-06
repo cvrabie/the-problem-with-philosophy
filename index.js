@@ -41,12 +41,17 @@ class Shape {
     static DARK_RED = new Colour(139, 0, 0, 255);
     static BLUE = new Colour(0, 0, 255, 255);
     static DARK_BLUE = new Colour(0, 0, 139, 255);
+    static CYAN = new Colour(0, 255, 255, 255);
+    static BLACK = new Colour(0, 0, 0, 255);
     static GREEN = new Colour(0, 255, 0, 255);
     static DARK_GREEN = new Colour(0, 100, 0, 255);
+    static GREEN_YELLOW = new Colour(173, 255, 47, 255);
     static PURPLE = new Colour(128, 0, 128, 255);
+    static MAGENTA = new Colour(255, 0, 255, 255);
     static YELLOW = new Colour(255, 255, 0, 255);
     static DARK_YELLOW = new Colour(204, 204, 0, 255);
     static OLIVE = new Colour(128, 128, 0, 255);
+    static PEACH_PUFF = new Colour(255, 218, 185, 255);
  }
 
  class NegativeSpace {
@@ -165,11 +170,12 @@ class Shape {
 
  class CompoundDigit3x5 extends Digit3x5 {
     static pixelCount = super.pixelCount;
-    static hPadding = 5;
-    static vPadding = 5;
 
-    constructor(digit, shapePrototype, shapeFactory, negativeShapeFactory) {
+    constructor(digit, shapePrototype, shapeFactory, negativeShapeFactory, hPadding, vPadding) {
         super(digit);
+        this.hPadding = hPadding;
+        this.vPadding = vPadding;
+
         this.shapes = [];
         for(let row = 0; row < Digit3x5.height; ++row){
             for(let column = 0; column < Digit3x5.width; ++column){
@@ -207,22 +213,22 @@ class Shape {
                             //entire rows of shapes aleady written
                     byte =  row * shapePixelHeight * Digit3x5.width * bytesPerLine
                             //horizontal padding in between shapes that were skipped
-                            + row * shapePixelHeight * (Digit3x5.width - 1) * CompoundDigit3x5.hPadding * 4
+                            + row * shapePixelHeight * (Digit3x5.width - 1) * hPadding * 4
                             
                             //vertical padding in between shapes
-                            + row * Digit3x5.width * bytesPerLine * CompoundDigit3x5.vPadding 
+                            + row * Digit3x5.width * bytesPerLine * vPadding 
                             //horizontal padding in between vertical padding
-                            + row * (Digit3x5.width - 1) * CompoundDigit3x5.vPadding * CompoundDigit3x5.hPadding * 4
+                            + row * (Digit3x5.width - 1) * vPadding * hPadding * 4
                             
                             //entire rows of pixes already written on the current line
                             + h * Digit3x5.width * bytesPerLine 
                             //horizontal padding in the rows of pixels already written on the current line
-                            + h * (Digit3x5.width - 1) * CompoundDigit3x5.hPadding * 4
+                            + h * (Digit3x5.width - 1) * hPadding * 4
 
                             //the number of columns already skipped
                             + column * bytesPerLine
                             //horizonal padding on he columns already skipped
-                            + column * CompoundDigit3x5.hPadding * 4;
+                            + column * hPadding * 4;
 
                     d.set(shape.data.subarray(h*shapePixelWidth*4, (h+1)*shapePixelWidth*4), byte);
                     // if(digit==7) {
@@ -244,11 +250,11 @@ class Shape {
     }
     getPixelWidth(){
         //each shape is repliced horizontally for Digit3x5.width and in between each instance there is hPadding
-        return Digit3x5.width * this.shapes[0].getPixelWidth() + (Digit3x5.width - 1) * CompoundDigit3x5.hPadding;
+        return Digit3x5.width * this.shapes[0].getPixelWidth() + (Digit3x5.width - 1) * this.hPadding;
     }
     getPixelHeight(){
-        //each shape is repliced vertically for Digit3x5.width and in between each instance there is hPadding
-        return Digit3x5.height * this.shapes[0].getPixelHeight() + (Digit3x5.height - 1) * CompoundDigit3x5.vPadding ;
+        //each shape is repliced vertically for Digit3x5.width and in between each instance there is vPadding
+        return Digit3x5.height * this.shapes[0].getPixelHeight() + (Digit3x5.height - 1) * this.vPadding ;
     }
  }
 
@@ -266,29 +272,29 @@ class Shape {
     // }
     console.log("NumberArt");
     const PositivePositivePositive = () => new PixelDigit3x5(Rando.next(), Colour.CRIMSON);
-    const PositivePositiveNegative = () => new PixelDigit3x5(Rando.next(), Colour.DARK_RED);
-    const PositiveNegativePositive = () => new PixelDigit3x5(Rando.next(), Colour.DARK_YELLOW);
-    const PositiveNegativeNegative = () => new PixelDigit3x5(Rando.next(), Colour.OLIVE);
+    const PositivePositiveNegative = () => new PixelDigit3x5(Rando.next(), Colour.MAGENTA);
+    const PositiveNegativePositive = () => new PixelDigit3x5(Rando.next(), Colour.PURPLE);
+    const PositiveNegativeNegative = () => new PixelDigit3x5(Rando.next(), Colour.PEACH_PUFF);
     const NegativeNegativePositive = ()=>  new PixelDigit3x5(Rando.next(), Colour.BLUE);
-    const NegativeNegativeNegative = ()=>  new PixelDigit3x5(Rando.next(), Colour.DARK_BLUE);
+    const NegativeNegativeNegative = ()=>  new PixelDigit3x5(Rando.next(), Colour.BLACK);
     const NegativePositivePositive = ()=>  new PixelDigit3x5(Rando.next(), Colour.GREEN);
-    const NegativePositiveNegative = ()=>  new PixelDigit3x5(Rando.next(), Colour.DARK_GREEN);
+    const NegativePositiveNegative = ()=>  new PixelDigit3x5(Rando.next(), Colour.OLIVE);
     const L1Reference = PositivePositivePositive();
     console.log(`L1: ${L1Reference.getPixelWidth()}x${L1Reference.getPixelHeight()}`);
 
-    const PositivePositive = () => new CompoundDigit3x5(1, L1Reference, PositivePositivePositive, PositivePositiveNegative);
-    const PositiveNegative = () => new CompoundDigit3x5(1, L1Reference, PositiveNegativePositive, PositiveNegativeNegative);
-    const NegativePositive = () => new CompoundDigit3x5(0, L1Reference, NegativePositivePositive, NegativePositiveNegative);
-    const NegativeNegative = () => new CompoundDigit3x5(0, L1Reference, NegativeNegativePositive, NegativeNegativeNegative);
+    const PositivePositive = () => new CompoundDigit3x5(Rando.next(), L1Reference, PositivePositivePositive, PositivePositiveNegative, 5, 5);
+    const PositiveNegative = () => new CompoundDigit3x5(Rando.next(), L1Reference, PositiveNegativePositive, PositiveNegativeNegative, 5, 5);
+    const NegativePositive = () => new CompoundDigit3x5(Rando.next(), L1Reference, NegativePositivePositive, NegativePositiveNegative, 5, 5);
+    const NegativeNegative = () => new CompoundDigit3x5(Rando.next(), L1Reference, NegativeNegativePositive, NegativeNegativeNegative, 5, 5);
     const L2Reference = PositivePositive();
     console.log(`L2: ${L2Reference.getPixelWidth()}x${L2Reference.getPixelHeight()}`);
 
-    const Positive = () => new CompoundDigit3x5(1, L2Reference, PositivePositive, PositiveNegative);
-    const Negative = () => new CompoundDigit3x5(1, L2Reference, NegativePositive, NegativeNegative);
+    const Positive = () => new CompoundDigit3x5(Rando.next(), L2Reference, PositivePositive, PositiveNegative, 10, 10);
+    const Negative = () => new CompoundDigit3x5(Rando.next(), L2Reference, NegativePositive, NegativeNegative, 10, 10);
     const L3Reference = Positive();
     console.log(`L3: ${L2Reference.getPixelWidth()}x${L3Reference.getPixelHeight()}`);
 
-    const art = new CompoundDigit3x5(7, L3Reference, Positive, Negative);
+    const art = new CompoundDigit3x5(Rando.next(), L3Reference, Positive, Negative, 20, 20);
     console.log(`L4: ${art.getPixelWidth()}x${art.getPixelHeight()}`);
     art.draw(context, 0, 0);
 }
