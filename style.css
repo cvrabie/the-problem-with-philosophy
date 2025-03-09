@@ -16,13 +16,17 @@ canvas#art {
 }
 
 table#doc {
-    max-width: 600px;
+    max-width: 1000px;
     margin: 0 auto;
     font-family: 'Courier New', Courier, monospace;
 }
 
 table#doc thead td {
     padding: 5px 20px 5px 0;
+}
+
+table#doc > tbody > tr > td:nth-child(2) {
+    min-width: 300px;
 }
 
 table#doc table.matrix{
